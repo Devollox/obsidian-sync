@@ -89,8 +89,7 @@ jobs:
         if: matrix.platform == 'windows'
         shell: bash
         run: |
-          mv "build/bin/obsync.exe" \
-             "build/bin/obsync.exe"
+          echo "Windows build ready"
 
       - name: Prepare macOS artifact
         if: matrix.platform == 'macos'
