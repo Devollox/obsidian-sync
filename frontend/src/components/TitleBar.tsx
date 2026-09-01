@@ -27,6 +27,9 @@ export function TitleBar({ onMinimize, onHide, onQuit }: Props) {
 				<WinBtn onClick={onMinimize} title='Minimize'>
 					–
 				</WinBtn>
+				<WinBtn onClick={onHide} title='Hide to tray'>
+					□
+				</WinBtn>
 				<WinBtn onClick={onQuit} title='Quit' danger>
 					×
 				</WinBtn>

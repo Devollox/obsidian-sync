@@ -44,7 +44,7 @@ func main() {
 		},
 		OnBeforeClose: func(ctx context.Context) bool {
 			runtime.Hide(ctx)
-			return true
+			return false
 		},
 		Bind: []interface{}{app},
 	})
