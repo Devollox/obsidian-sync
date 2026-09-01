@@ -39,6 +39,9 @@ func (s *Syncer) Startup(ctx context.Context) {
 func git(dir string, args ...string) (string, error) {
 	cmd := exec.Command("git", args...)
 	cmd.Dir = dir
+
+	hideWindow(cmd)
+
 	out, err := cmd.CombinedOutput()
 	return strings.TrimSpace(string(out)), err
 }
