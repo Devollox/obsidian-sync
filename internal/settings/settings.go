@@ -33,7 +33,7 @@ func configPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(filepath.Dir(exe), "settings.json"), nil
+	return filepath.Join(filepath.Dir(exe), "settings_obsync.json"), nil
 }
 
 func Load() (*Settings, error) {
