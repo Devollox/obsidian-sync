@@ -1,0 +1,36 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  background: #0a0a0c;
+  color: #e9e6dd;
+  font-family: 'Geist Mono', 'SF Mono', 'Fira Code', monospace;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow: hidden;
+}
+
+.drag {
+  --wails-draggable: drag;
+}
+
+.no-drag {
+  --wails-draggable: no-drag;
+}
+
+.scroll-y {
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}

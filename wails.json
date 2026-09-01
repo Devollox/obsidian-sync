@@ -1,0 +1,14 @@
+{
+	"$schema": "https://wails.io/schemas/config.v2.json",
+	"name": "Obsync",
+	"outputfilename": "Obsync",
+	"version": "1.0.0",
+	"frontend:install": "npm install",
+	"frontend:build": "npm run build",
+	"frontend:dev:watcher": "npm run dev",
+	"frontend:dev:serverUrl": "auto",
+	"author": {
+		"name": "Devollox",
+		"email": "anisin.97@bk.ru"
+	}
+}

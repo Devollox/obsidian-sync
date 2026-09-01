@@ -1,4 +1,10 @@
-# obsidian-sync
+# Obsync
+
+<div align="center">
+  <img width="416" height="355" alt="image" src="https://github.com/user-attachments/assets/dfb56efc-c7d3-4a16-ab83-2fc3e9e74359" />
+</div>
+
+##
 
 Lightweight desktop app for automated Obsidian vault synchronization with GitHub, built with [Wails](https://wails.io/) + React + TypeScript.
 
@@ -54,7 +60,7 @@ For SSH — add your key to GitHub and use `git@github.com:YOUR_USERNAME/YOUR_RE
 
 ### 5. Select vault in the app
 
-Open obsidian-sync, go to **Sync** tab, click the vault path field and select your vault folder.
+Open obsync, go to **Sync** tab, click the vault path field and select your vault folder.
 
 Hit **Sync now** to verify everything works.
 
