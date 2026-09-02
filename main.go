@@ -5,6 +5,7 @@ import (
 	"embed"
 	"log"
 
+	"local/obsync/internal/settings"
 	"local/obsync/internal/tray"
 
 	"github.com/wailsapp/wails/v2"
@@ -23,30 +24,49 @@ func main() {
 		}
 	}()
 
+	s, err := settings.Load()
+	if err != nil {
+		log.Printf("settings load error: %v", err)
+	}
+
 	app := NewApp()
 
-	err := wails.Run(&options.App{
-		Title:         "Obsync",
-		Width:         420,
-		Height:        360,
-		Frameless:     true,
-		DisableResize: true,
+	err = wails.Run(&options.App{
+		Title:          "Obsync",
+		Width:          420,
+		Height:         360,
+		Frameless:      true,
+		DisableResize:  true,
+		StartHidden:    s.StartHidden,
+		HideWindowOnClose: true,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		BackgroundColour: &options.RGBA{R: 10, G: 10, B: 12, A: 1},
+		BackgroundColour: &options.RGBA{
+			R: 10,
+			G: 10,
+			B: 12,
+			A: 1,
+		},
 		OnStartup: func(ctx context.Context) {
 			app.startup(ctx)
+
 			go tray.Run(tray.Handlers{
-				OnShow: func() { runtime.Show(ctx) },
-				OnQuit: func() { runtime.Quit(ctx) },
+				OnShow: func() {
+					runtime.Show(ctx)
+				},
+				OnQuit: func() {
+					runtime.Quit(ctx)
+				},
 			})
 		},
 		OnBeforeClose: func(ctx context.Context) bool {
 			runtime.Hide(ctx)
 			return false
 		},
-		Bind: []interface{}{app},
+		Bind: []interface{}{
+			app,
+		},
 	})
 
 	if err != nil {

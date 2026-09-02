@@ -1,13 +1,10 @@
-# Initial Release
+# Fixed Tray & Dayli mode
 
-## Added
+## Fixed
 
-- **Manual sync** — git stash, pull --rebase, stash pop, add, commit, push
-- **Auto sync** — configurable interval: 5 / 15 / 30 / 60 minutes
-- **Daily mode** — one sync per day, skips if today's date is already in last commit message
-- **Sync on startup** — pulls latest changes on every app launch
-- **Vault picker** — select Obsidian vault folder via system dialog
-- **Autostart** — register on system startup via Windows registry
-- **Start hidden** — hide to tray on launch
-- **System tray** — Show / Quit from tray icon
-- **Sync / Settings tabs** — two-tab layout
+- **Daily mode** — Daily mode now ignores interval-based auto sync and performs only one automatic sync per day.
+- **Duplicate syncs** — repeated app launches on the same day no longer create additional automatic commits or pushes.
+- **Startup sync** — Daily mode performs a full sync on the first launch of the day; regular startup sync only pulls changes.
+- **Sync status** — automatic sync results and skipped daily sync status are now shown in the app.
+- **System tray** — closing the window now hides the app to the tray instead of quitting it.
+- **Start hidden** — the app correctly launches hidden when the option is enabled.

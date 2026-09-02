@@ -14,7 +14,13 @@ export default function App() {
 
 	const pickFolder = async () => {
 		const path = await window.go.main.App.PickFolder()
-		if (path && settings) save({ ...settings, vault_path: path })
+
+		if (path && settings) {
+			save({
+				...settings,
+				vault_path: path,
+			})
+		}
 	}
 
 	return (
@@ -37,9 +43,22 @@ export default function App() {
 				onQuit={() => window.go.main.App.QuitApp()}
 			/>
 
-			<div style={{ height: '1px', background: 'rgba(233,230,221,0.06)', flexShrink: 0 }} />
+			<div
+				style={{
+					height: '1px',
+					background: 'rgba(233,230,221,0.06)',
+					flexShrink: 0,
+				}}
+			/>
 
-			<div style={{ display: 'flex', padding: '0 20px', gap: '0', flexShrink: 0 }}>
+			<div
+				style={{
+					display: 'flex',
+					padding: '0 20px',
+					gap: '0',
+					flexShrink: 0,
+				}}
+			>
 				{(['sync', 'settings'] as Tab[]).map(t => (
 					<button
 						key={t}
@@ -63,7 +82,13 @@ export default function App() {
 				))}
 			</div>
 
-			<div style={{ height: '1px', background: 'rgba(233,230,221,0.06)', flexShrink: 0 }} />
+			<div
+				style={{
+					height: '1px',
+					background: 'rgba(233,230,221,0.06)',
+					flexShrink: 0,
+				}}
+			/>
 
 			<div className='scroll-y' style={{ flex: 1 }}>
 				{tab === 'sync' && settings && (
@@ -75,6 +100,7 @@ export default function App() {
 						onPickFolder={pickFolder}
 					/>
 				)}
+
 				{tab === 'settings' && settings && (
 					<SettingsPanel
 						settings={settings}
@@ -83,6 +109,7 @@ export default function App() {
 						onPickFolder={pickFolder}
 					/>
 				)}
+
 				{!settings && (
 					<div
 						style={{

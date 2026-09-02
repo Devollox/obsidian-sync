@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"local/obsync/internal/settings"
@@ -11,10 +12,12 @@ import (
 )
 
 type App struct {
-	ctx    context.Context
-	syncer *gosync.Syncer
-	ticker *time.Ticker
-	stop   chan struct{}
+	ctx            context.Context
+	syncer         *gosync.Syncer
+	ticker         *time.Ticker
+	stop           chan struct{}
+	lastSyncResult *gosync.SyncResult
+	resultMu       sync.RWMutex
 }
 
 func NewApp() *App {
@@ -33,34 +36,67 @@ func (a *App) startup(ctx context.Context) {
 		return
 	}
 
-	if s.StartHidden {
-		runtime.Hide(ctx)
-	}
-
 	if s.SyncOnStartup && s.VaultPath != "" {
-		go func() {
-			result, err := a.syncer.SyncOnStartup(
+		go a.runSync(func() (*gosync.SyncResult, error) {
+			return a.syncer.SyncOnStartup(
 				s.VaultPath,
 				s.DailySync,
 			)
-
-			if err != nil {
-				runtime.LogErrorf(a.ctx, "Startup sync error: %v", err)
-				return
-			}
-
-			if result.Status == gosync.StatusError {
-				runtime.LogErrorf(a.ctx, "Startup sync failed: %s", result.Message)
-				return
-			}
-
-			runtime.LogInfof(a.ctx, "Startup sync: %s", result.Message)
-		}()
+		})
 	}
 
 	if !s.DailySync && s.AutoSync && s.VaultPath != "" {
 		a.startAutoSync(s)
 	}
+}
+
+func (a *App) setLastSyncResult(result *gosync.SyncResult) {
+	if result == nil {
+		return
+	}
+
+	a.resultMu.Lock()
+	a.lastSyncResult = result
+	a.resultMu.Unlock()
+}
+
+func (a *App) GetLastSyncResult() *gosync.SyncResult {
+	a.resultMu.RLock()
+	defer a.resultMu.RUnlock()
+
+	if a.lastSyncResult == nil {
+		return nil
+	}
+
+	result := *a.lastSyncResult
+	return &result
+}
+
+func (a *App) emitSyncResult(result *gosync.SyncResult) {
+	if result == nil {
+		return
+	}
+
+	a.setLastSyncResult(result)
+
+	if a.ctx != nil {
+		runtime.EventsEmit(a.ctx, "sync:result", result)
+	}
+}
+
+func (a *App) runSync(fn func() (*gosync.SyncResult, error)) {
+	result, err := fn()
+
+	if err != nil {
+		a.emitSyncResult(&gosync.SyncResult{
+			Status:    gosync.StatusError,
+			Message:   err.Error(),
+			Timestamp: time.Now().Format("15:04:05"),
+		})
+		return
+	}
+
+	a.emitSyncResult(result)
 }
 
 func (a *App) stopAutoSync() {
@@ -105,7 +141,9 @@ func (a *App) startAutoSync(s *settings.Settings) {
 					continue
 				}
 
-				_, _ = a.syncer.Sync(cfg.VaultPath, false)
+				a.runSync(func() (*gosync.SyncResult, error) {
+					return a.syncer.Sync(cfg.VaultPath, false)
+				})
 
 			case <-a.stop:
 				return
@@ -121,13 +159,27 @@ func (a *App) Sync() (*gosync.SyncResult, error) {
 	}
 
 	if s.VaultPath == "" {
-		return &gosync.SyncResult{
+		result := &gosync.SyncResult{
 			Status:  gosync.StatusError,
 			Message: "Vault path is not set",
-		}, nil
+		}
+
+		a.emitSyncResult(result)
+		return result, nil
 	}
 
-	return a.syncer.Sync(s.VaultPath, false)
+	result, err := a.syncer.Sync(s.VaultPath, false)
+	if err != nil {
+		a.emitSyncResult(&gosync.SyncResult{
+			Status:    gosync.StatusError,
+			Message:   err.Error(),
+			Timestamp: time.Now().Format("15:04:05"),
+		})
+		return nil, err
+	}
+
+	a.emitSyncResult(result)
+	return result, nil
 }
 
 func (a *App) GetSettings() (*settings.Settings, error) {
