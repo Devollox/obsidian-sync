@@ -2,5 +2,10 @@
 
 package settings
 
-func SetAutostart(enabled bool) error { return nil }
-func GetAutostart() bool              { return false }
+func SetAutostart(enabled bool) error {
+	return nil
+}
+
+func GetAutostart() bool {
+	return false
+}

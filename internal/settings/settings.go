@@ -2,6 +2,7 @@ package settings
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 )
@@ -28,12 +29,22 @@ func DefaultSettings() *Settings {
 	}
 }
 
-func configPath() (string, error) {
-	exe, err := os.Executable()
+func configDir() (string, error) {
+	dir, err := os.UserConfigDir()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(filepath.Dir(exe), "settings_obsync.json"), nil
+
+	return filepath.Join(dir, "Obsync"), nil
+}
+
+func configPath() (string, error) {
+	dir, err := configDir()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(dir, "settings.json"), nil
 }
 
 func Load() (*Settings, error) {
@@ -43,22 +54,43 @@ func Load() (*Settings, error) {
 	}
 
 	data, err := os.ReadFile(path)
-	if err != nil {
+	if errors.Is(err, os.ErrNotExist) {
 		return DefaultSettings(), nil
 	}
 
+	if err != nil {
+		return nil, err
+	}
+
 	s := DefaultSettings()
+
 	if err := json.Unmarshal(data, s); err != nil {
-		return DefaultSettings(), nil
+		return nil, err
+	}
+
+	if s.Interval <= 0 {
+		s.Interval = 30
 	}
 
 	return s, nil
 }
 
 func Save(s *Settings) error {
-	path, err := configPath()
+	if s == nil {
+		return errors.New("settings are nil")
+	}
+
+	dir, err := configDir()
 	if err != nil {
 		return err
+	}
+
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+
+	if s.Interval <= 0 {
+		s.Interval = 30
 	}
 
 	data, err := json.MarshalIndent(s, "", "  ")
@@ -66,5 +98,7 @@ func Save(s *Settings) error {
 		return err
 	}
 
-	return os.WriteFile(path, data, 0644)
+	path := filepath.Join(dir, "settings.json")
+
+	return os.WriteFile(path, data, 0o600)
 }

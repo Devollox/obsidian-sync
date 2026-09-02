@@ -25,19 +25,17 @@ export function SettingsPanel({ settings, saving, onChange }: Props) {
 			</div>
 
 			<ToggleRow
-				label='Sync on startup'
-				desc='Pull changes when the app launches'
-				value={settings.sync_on_startup}
-				onChange={v => set('sync_on_startup', v)}
-			/>
-
-			<ToggleRow
 				label='Auto sync'
 				desc='Automatically sync on interval'
 				value={settings.auto_sync}
 				onChange={v => set('auto_sync', v)}
 			/>
-
+			<ToggleRow
+				label='Sync on startup'
+				desc='Pull changes when the app launches'
+				value={settings.sync_on_startup}
+				onChange={v => set('sync_on_startup', v)}
+			/>
 			{settings.auto_sync && (
 				<>
 					<ToggleRow
