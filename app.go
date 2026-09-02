@@ -45,7 +45,7 @@ func (a *App) startup(ctx context.Context) {
 		})
 	}
 
-	if !s.DailySync && s.AutoSync && s.VaultPath != "" {
+	if s.AutoSync && s.VaultPath != "" {
 		a.startAutoSync(s)
 	}
 }
@@ -116,11 +116,7 @@ func (a *App) stopAutoSync() {
 func (a *App) startAutoSync(s *settings.Settings) {
 	a.stopAutoSync()
 
-	if s.DailySync || !s.AutoSync || s.VaultPath == "" {
-		return
-	}
-
-	if s.Interval <= 0 {
+	if !s.AutoSync || s.VaultPath == "" || s.Interval <= 0 {
 		return
 	}
 
@@ -133,17 +129,19 @@ func (a *App) startAutoSync(s *settings.Settings) {
 			select {
 			case <-a.ticker.C:
 				cfg, err := settings.Load()
-				if err != nil {
+				if err != nil || !cfg.AutoSync || cfg.VaultPath == "" {
 					continue
 				}
 
-				if cfg.DailySync || !cfg.AutoSync || cfg.VaultPath == "" {
-					continue
+				if cfg.DailySync {
+					a.runSync(func() (*gosync.SyncResult, error) {
+						return a.syncer.SyncDaily(cfg.VaultPath)
+					})
+				} else {
+					a.runSync(func() (*gosync.SyncResult, error) {
+						return a.syncer.Sync(cfg.VaultPath, false)
+					})
 				}
-
-				a.runSync(func() (*gosync.SyncResult, error) {
-					return a.syncer.Sync(cfg.VaultPath, false)
-				})
 
 			case <-a.stop:
 				return
@@ -168,7 +166,14 @@ func (a *App) Sync() (*gosync.SyncResult, error) {
 		return result, nil
 	}
 
-	result, err := a.syncer.Sync(s.VaultPath, false)
+	var result *gosync.SyncResult
+
+	if s.DailySync {
+		result, err = a.syncer.SyncDaily(s.VaultPath)
+	} else {
+		result, err = a.syncer.Sync(s.VaultPath, false)
+	}
+
 	if err != nil {
 		a.emitSyncResult(&gosync.SyncResult{
 			Status:    gosync.StatusError,
@@ -203,7 +208,7 @@ func (a *App) SaveSettings(s *settings.Settings) error {
 
 	a.stopAutoSync()
 
-	if !s.DailySync && s.AutoSync && s.VaultPath != "" {
+	if s.AutoSync && s.VaultPath != "" {
 		a.startAutoSync(s)
 	}
 
