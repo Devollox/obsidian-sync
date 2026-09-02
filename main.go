@@ -67,6 +67,13 @@ func main() {
 		Bind: []interface{}{
 			app,
 		},
+		SingleInstanceLock: &options.SingleInstanceLock{
+			UniqueId: "e0c6c34f-e546-4e1b-9aa0-7c8e5839ce13",
+			OnSecondInstanceLaunch: func(secondInstanceData options.SecondInstanceData) {
+				runtime.Show(app.ctx)
+				runtime.WindowUnminimise(app.ctx)
+			},
+		},
 	})
 
 	if err != nil {
